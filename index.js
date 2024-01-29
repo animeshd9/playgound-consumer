@@ -15,24 +15,28 @@ amqp.connect(process.env.RABBITMQ_URI).then(async (connection) => {
   await conntectToDB()
   const channel = await connection.createChannel();
   const queue = 'playground_queue';
-
+  
   await channel.assertQueue(queue, { durable: true });
-
+  
   console.log('Waiting for messages. To exit press CTRL+C');
-
-  channel.consume(queue, async (msg) => {
-    try {
-      const userDetails = JSON.parse(msg.content.toString());
-      console.log(userDetails)
-      // // Create and start a new Docker container
-      console.log(userDetails)
-      await createAndStartContainer(userDetails);
-
-      console.log(`Created container for user ${userDetails.email}`);
-    } catch (error) {
-      console.error('Error processing message:', error);
-    }
-  }, { noAck: true });
+  const availableContainers = await docker.listContainers({ filters: { status: ['running'] } } )
+  const maxContainers = 5;
+  
+  if (availableContainers.length < maxContainers)  {
+    channel.consume(queue, async (msg) => {
+      try {
+        const userDetails = JSON.parse(msg.content.toString());
+        console.log(userDetails)
+        // // Create and start a new Docker container
+        console.log(userDetails)
+        await createAndStartContainer(userDetails);
+  
+        console.log(`Created container for user ${userDetails.email}`);
+      } catch (error) {
+        console.error('Error processing message:', error);
+      }
+    }, { noAck: true });
+  }
 });
 
 async function createAndStartContainer(data) {
@@ -60,11 +64,9 @@ async function createAndStartContainer(data) {
 
     try {
 
-      const availableContainers = await docker.listContainers({ filters: { status: ['running'] } } )
-      const maxContainers = 5;
       console.log( availableContainers )
       // Check if the number of running containers is less than the maximum allowed
-      if (availableContainers.length < maxContainers)  {
+      // if (availableContainers.length < maxContainers)  {
 
         const container = await docker.createContainer(containerConfig);
         // console.log(container, 'dfdfdfd')
@@ -136,9 +138,9 @@ async function createAndStartContainer(data) {
         resolve(container);
       }, 2 * 60 * 1000);
       
-    } else {
-      reject( new Error('Maximum number of container reached'))
-    }
+    // } else {
+    //   reject( new Error('Maximum number of container reached'))
+    // }
     } catch (error) {
       console.log(error)
       reject(error);
@@ -155,6 +157,37 @@ async function destroyContainer(userId, container) {
       await User.findByIdAndUpdate( userId, { 'haveContainer': false, 'inQueue': false, 'active': false } )
       await deleteProxyList( userId )
       console.log(`Destroyed container for user ${userId}`);
+      const msg = {
+        to: data.email ,
+        from: 'noreply@setscharts.app', // Use the email address or domain you verified above
+        subject: 'Playground for sets editor',
+        html:`<!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Email Template</title>
+      </head>
+      <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; text-align: center;">
+      
+          <div style="background-color: #ffffff; max-width: 600px; margin: auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+      
+              <h2 style="color: #333;">Hello there!</h2>
+              <p style="color: #666; font-size: 16px;">Please sign up again. Thank you</p>
+      
+              <a href="https://sets-playground.pages.dev" style="display: inline-block; margin: 20px 0; padding: 15px 30px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Visit Link</a>
+
+              <p style="color: #666; font-size: 14px;">If the button above doesn't work, you can copy and paste the following link into your browser:</p>
+              <p style="color: #007bff; font-size: 14px;"><a href="YOUR_LINK_HERE" style="color: #007bff; text-decoration: none;">YOUR_LINK_HERE</a></p>
+      
+              <p style="color: #666; font-size: 14px;">Thank you!</p>
+      
+          </div>
+      
+      </body>
+      </html>`}
+      console.log(update, '---------')
+      await sgMail.send(msg)
       resolve();
     } catch (error) {
       console.error(`Error destroying container for user ${userId}:`, error);
