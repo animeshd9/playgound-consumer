@@ -42,7 +42,7 @@ async function createAndStartContainer(data) {
     console.log( randomPort )
 
     const containerConfig = {
-      Image: 'rick00/sets-editor-arm:v0.5',
+      Image: 'rick00/free-instance',
       ExposedPorts: {
         '80/tcp': {},
         '3333/tcp': {},
