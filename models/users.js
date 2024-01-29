@@ -17,6 +17,13 @@ const userSchema = new mongoose.Schema({
     inQueue: {
         type: Boolean,
         default: true
+    },
+    host: {
+        type: Array,
+    },
+    active: {
+        type: Boolean,
+        default: true
     }
 })
 

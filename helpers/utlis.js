@@ -16,9 +16,9 @@ const createProxyList = async ( userId, data ) => {
             frpcFile.proxies.push(...newProxies);
             fs.writeFileSync('/etc/frp/frpc.json', JSON.stringify(frpcFile, null, 2))
             await reloadFrpc();
-            return true
+            return newProxies
         }
-        return false
+        return null
     } catch (error) {
         console.log(error)
     }
