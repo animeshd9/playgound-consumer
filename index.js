@@ -7,6 +7,8 @@ const mongoose = require('mongoose')
 const { User } = require('./models/users')
 const { isPortAvailableinHost, generateRandomNumber } = require('./helpers/port')
 const { createProxyList, deleteProxyList } = require('./helpers/utlis')
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey( process.env.SENDGRID_API_KEY );
 
 // Connect to RabbitMQ and consume messages
 amqp.connect(process.env.RABBITMQ_URI).then(async (connection) => {
@@ -74,7 +76,38 @@ async function createAndStartContainer(data) {
         if( frp ) {
           console.log('Tunnel created for '+ data.email, data._id )
           const update = await User.findByIdAndUpdate( data._id, { 'haveContainer': true, 'portMap': randomPort, 'host':frp , 'inQueue': false } )
+          const msg = {
+            to: data.email ,
+            from: 'noreply@setscharts.app', // Use the email address or domain you verified above
+            subject: 'Playground for sets editor',
+            html:`<!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Email Template</title>
+          </head>
+          <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; text-align: center;">
+          
+              <div style="background-color: #ffffff; max-width: 600px; margin: auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+          
+                  <h2 style="color: #333;">Hello there!</h2>
+                  <p style="color: #666; font-size: 16px;">We're excited to share something with you. Click the link below:</p>
+          
+                  <a href="https://${frp[0].host}" style="display: inline-block; margin: 20px 0; padding: 15px 30px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Visit Link</a>
+                  <a href="https://${frp[1].host}/terminal" style="display: inline-block; margin: 20px 0; padding: 15px 30px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Visit Link</a>
+
+                  <p style="color: #666; font-size: 14px;">If the button above doesn't work, you can copy and paste the following link into your browser:</p>
+                  <p style="color: #007bff; font-size: 14px;"><a href="YOUR_LINK_HERE" style="color: #007bff; text-decoration: none;">YOUR_LINK_HERE</a></p>
+          
+                  <p style="color: #666; font-size: 14px;">Thank you!</p>
+          
+              </div>
+          
+          </body>
+          </html>`}
           console.log(update, '---------')
+          await sgMail.send(msg)
         }
 
       console.log(`Container for User ${data.email} ID:`, container.id);
