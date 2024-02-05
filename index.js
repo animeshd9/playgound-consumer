@@ -178,8 +178,6 @@ async function destroyContainer(data, container) {
       
               <a href="https://sets-playground.pages.dev" style="display: inline-block; margin: 20px 0; padding: 15px 30px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Visit Link</a>
 
-              <p style="color: #666; font-size: 14px;">If the button above doesn't work, you can copy and paste the following link into your browser:</p>
-              <p style="color: #007bff; font-size: 14px;"><a href="YOUR_LINK_HERE" style="color: #007bff; text-decoration: none;">YOUR_LINK_HERE</a></p>
       
               <p style="color: #666; font-size: 14px;">Thank you!</p>
       
