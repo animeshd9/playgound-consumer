@@ -135,7 +135,7 @@ async function createAndStartContainer(data) {
       
 
       setTimeout(async () => {
-        await destroyContainer(data._id, container);
+        await destroyContainer(data, container);
         resolve(container);
       }, 2 * 60 * 1000);
       
@@ -149,15 +149,15 @@ async function createAndStartContainer(data) {
   });
 }
 
-async function destroyContainer(userId, container) {
+async function destroyContainer(data, container) {
   return new Promise(async (resolve, reject) => {
     try {
       // Stop and remove the container
       await container.stop();
       await container.remove();
-      await User.findByIdAndUpdate( userId, { 'haveContainer': false, 'inQueue': false, 'active': false } )
-      await deleteProxyList( userId )
-      console.log(`Destroyed container for user ${userId}`);
+      await User.findByIdAndUpdate( data._id, { 'haveContainer': false, 'inQueue': false, 'active': false } )
+      await deleteProxyList( data._id )
+      console.log(`Destroyed container for user ${data._id}`);
       const msg = {
         to: data.email ,
         from: 'noreply@setscharts.app', // Use the email address or domain you verified above
@@ -191,7 +191,7 @@ async function destroyContainer(userId, container) {
       await sgMail.send(msg)
       resolve();
     } catch (error) {
-      console.error(`Error destroying container for user ${userId}:`, error);
+      console.error(`Error destroying container for user ${data._id}:`, error);
       reject(error);
     }
   });
