@@ -185,7 +185,6 @@ async function destroyContainer(data, container) {
       
       </body>
       </html>`}
-      console.log(update, '---------')
       await sgMail.send(msg)
       resolve();
     } catch (error) {
