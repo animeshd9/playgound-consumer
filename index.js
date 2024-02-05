@@ -20,6 +20,7 @@ amqp.connect(process.env.RABBITMQ_URI).then(async (connection) => {
   
   console.log('Waiting for messages. To exit press CTRL+C');
   const availableContainers = await docker.listContainers({ filters: { status: ['running'] } } )
+  console.log(availableContainers)
   const maxContainers = 5;
   
   if (availableContainers.length < maxContainers)  {
@@ -64,7 +65,7 @@ async function createAndStartContainer(data) {
 
     try {
 
-      console.log( availableContainers )
+      // console.log( availableContainers )
       // Check if the number of running containers is less than the maximum allowed
       // if (availableContainers.length < maxContainers)  {
 
@@ -96,8 +97,8 @@ async function createAndStartContainer(data) {
                   <h2 style="color: #333;">Hello there!</h2>
                   <p style="color: #666; font-size: 16px;">We're excited to share something with you. Click the link below:</p>
           
-                  <a href="https://${frp[0].host}" style="display: inline-block; margin: 20px 0; padding: 15px 30px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Visit Link</a>
-                  <a href="https://${frp[1].host}/terminal" style="display: inline-block; margin: 20px 0; padding: 15px 30px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Visit Link</a>
+                  <a href="https://${frp[0].host}" style="display: inline-block; margin: 20px 0; padding: 15px 30px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Editor</a>
+                  <a href="https://${frp[1].host}/terminal" style="display: inline-block; margin: 20px 0; padding: 15px 30px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Terminal</a>
 
                   <p style="color: #666; font-size: 14px;">If the button above doesn't work, you can copy and paste the following link into your browser:</p>
                   <p style="color: #007bff; font-size: 14px;"><a href="YOUR_LINK_HERE" style="color: #007bff; text-decoration: none;">YOUR_LINK_HERE</a></p>
